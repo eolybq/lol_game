@@ -7,4 +7,4 @@ class Player:
 		self.image = pygame.image.load(image_path).convert_alpha()
 		self.rect = self.image.get_rect(topleft=(x,y))
 		
-character = ((width - 50) // 2,height -150, 'sion.png')
+sion = Player((width - 50) // 2,height -150, 'sion.png')
