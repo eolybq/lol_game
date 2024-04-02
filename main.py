@@ -18,19 +18,13 @@ class Player:
         self.rect = self.image.get_rect(topleft=(x, y))
         self.cooldown_time = cooldown_time
 
-
-
     def attack(self):
             return Bullet(self.rect.centerx, self.rect.centery, "bullet.png", (50, 50), 20, sion.rect.centerx, sion.rect.centery)
-
 
     def update_cooldown(self, dt):
         self.cooldown_time -= dt
         if self.cooldown_time < 0:
             self.cooldown_time = 0
-
-
-
 
 class Axe:
     def __init__(self, x, y, size, obrazek):
@@ -71,16 +65,8 @@ sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (150, 1
 vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (150, 150), 5)
 bullet = Bullet((screen_width - 50) // 2, screen_height - 150, "bullet.png", (500, 500), 2, sion.x, sion.y)
 
-
-
 axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
-for i, image in enumerate(axes):
-    image.save(axe_paths[i])
-
-axes_obj = []
-for i in axe_paths:
-    axe = Axe(sion.rect.centerx, sion.rect.centery, (50, 50), i)
-    axes_obj.append(axe)
+axes_obj = [Axe(sion.rect.centerx, sion.rect.centery, (50, 50), path) for path in axe_paths]
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -93,6 +79,8 @@ close_text = font.render("x", True, RED)
 minimize_rect = pygame.Rect(screen_width - 70, 0, 30, 30)
 close_rect = pygame.Rect(screen_width - 35, 0, 30, 30)
 
+axe_frame_interval = 1000 // 6  # Interval pro aktualizaci obrázků sekery (6 FPS)
+axe_frame_timer = 0  # Časovač pro aktualizaci obrázků sekery
 
 current_frame = 0
 frame_timer = 0
@@ -103,6 +91,9 @@ dt = 0
 toolbar_rect = pygame.Rect(0, 0, screen_width, 50)
 
 while running:
+
+    dt = clock.tick(120) / 1000
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -113,18 +104,21 @@ while running:
                 pygame.quit()  # Ukončení Pygame
                 sys.exit()  # Ukončení programu
 
+
         elif event.type == pygame.KEYDOWN:
 
             if vladimir.cooldown_time <= 0:  # Kontrola cooldownu
+
                 print("Cooldown ready. Firing bullet.")
-                vladimir.cooldown_time = 5
+
+                vladimir.cooldown_time = 2.5
+
                 if event.key == pygame.K_q:  # Stisk klávesy pro výstřel
+
                     bullet = vladimir.attack()
 
     sion.update_cooldown(dt)
     vladimir.update_cooldown(dt)
-
-
 
     screen.fill("white")
 
@@ -138,8 +132,6 @@ while running:
     if keys[pygame.K_RIGHT]:
         sion.rect.x += 5  # Posun doprava
 
-
-
     if keys[pygame.K_w]:
         vladimir.rect.y -= 5  # Posun nahoru
     if keys[pygame.K_s]:
@@ -149,17 +141,11 @@ while running:
     if keys[pygame.K_d]:
         vladimir.rect.x += 5  # Posun doprava
 
-    # bullet
-
-    frame_timer += clock.tick(60)  # Získá čas od minulého snímku
-    if frame_timer >= frame_interval:
-        frame_timer = 0  # Resetuje časový interval
-        current_frame = (current_frame + 1) % len(axes_obj)  # Přejde na další snímek
-
-    screen.blit(axes_obj[current_frame].image, (100, 100))  # Vykreslí aktuální snímek
-
-
-
+    axe_frame_timer += dt * 1000  # Přidání času od minulého snímku v milisekundách
+    if axe_frame_timer >= axe_frame_interval:  # Aktualizace obrázku sekery
+        axe_frame_timer = 0
+        current_frame = (current_frame + 1) % len(axes_obj)
+    screen.blit(axes_obj[current_frame].image, (100, 100))  # Vykreslení aktuálního snímku
 
     if bullet is not None:
         bullet.update_target(sion.rect.centerx, sion.rect.centery)
@@ -168,20 +154,16 @@ while running:
         if bullet.rect.colliderect(sion.rect):
             bullet = None  # Zničení střely po zásahu cíle
 
-
     # Vykreslení lišty s tlačítky minimalizace a zavření
     pygame.draw.rect(screen, (100, 100, 100), minimize_rect)
     pygame.draw.rect(screen, (100, 100, 100), close_rect)
     screen.blit(minimize_text, (screen_width - 65, 5))
     screen.blit(close_text, (screen_width - 30, 5))
 
-
     screen.blit(sion.image, sion.rect)
     screen.blit(vladimir.image, vladimir.rect)
 
     pygame.display.flip()
-    clock.tick(60)
-
-    dt = clock.tick(60) / 1000
+    clock.tick(120)
 
 pygame.quit()
