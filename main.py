@@ -1,3 +1,4 @@
+import pygame
 import sys
 from bullet import *
 import math
@@ -27,6 +28,19 @@ class Player:
         self.cooldown_time -= dt
         if self.cooldown_time < 0:
             self.cooldown_time = 0
+
+
+
+
+class Axe:
+    def __init__(self, x, y, size, obrazek):
+        self.x = x
+        self.y = y
+        print("Attempting to load image from path:", obrazek)
+        self.image = pygame.image.load(obrazek).convert_alpha()
+        self.image = pygame.transform.scale(self.image, size)
+        self.rect = self.image.get_rect(topleft=(x, y))
+
 class Bullet:
     def __init__(self, x, y, image_path, size, speed, target_x, target_y):
         self.x = x
@@ -37,17 +51,6 @@ class Bullet:
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=(x, y))
         self.speed = speed
-
-class Axe:
-    def __init__(self, x, y, size, obrazek):
-        self.x = x
-        self.y = y
-        self.image = obrazek.convert_alpha()
-        self.image = pygame.transform.scale(self.image, size)
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-
-
 
     def move_towards(self):
         direction_x = self.target_x - self.rect.centerx
@@ -68,8 +71,14 @@ sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (150, 1
 vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (150, 150), 5)
 bullet = Bullet((screen_width - 50) // 2, screen_height - 150, "bullet.png", (500, 500), 2, sion.x, sion.y)
 
+
+
+axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
+for i, image in enumerate(axes):
+    image.save(axe_paths[i])
+
 axes_obj = []
-for i in axes:
+for i in axe_paths:
     axe = Axe(sion.rect.centerx, sion.rect.centery, (50, 50), i)
     axes_obj.append(axe)
 
@@ -84,6 +93,9 @@ close_text = font.render("x", True, RED)
 minimize_rect = pygame.Rect(screen_width - 70, 0, 30, 30)
 close_rect = pygame.Rect(screen_width - 35, 0, 30, 30)
 
+
+current_frame = 0
+frame_timer = 0
 clock = pygame.time.Clock()
 running = True
 is_firing = True
@@ -144,7 +156,7 @@ while running:
         frame_timer = 0  # Resetuje časový interval
         current_frame = (current_frame + 1) % len(axes_obj)  # Přejde na další snímek
 
-    screen.blit(axes_obj[current_frame], (100, 100))  # Vykreslí aktuální snímek
+    screen.blit(axes_obj[current_frame].image, (100, 100))  # Vykreslí aktuální snímek
 
 
 
