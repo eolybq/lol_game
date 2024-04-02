@@ -2,7 +2,7 @@ from PIL import Image
 import os
 
 # Adresář obsahující obrázky
-directory = "/home/vasek/Desktop/game/axes"
+directory = os.path.dirname(os.path.abspath(__file__))
 
 # Seznam pro uchování načtených obrázků
 axes = []
