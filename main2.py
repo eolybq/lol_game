@@ -1,6 +1,5 @@
 import pygame
 import sys
-import time
 from bullet import *
 import math
 from axe_list import *
