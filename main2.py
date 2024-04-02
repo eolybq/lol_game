@@ -17,6 +17,8 @@ class Player:
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(topleft=(x, y))
         self.cooldown_time = cooldown_time
+        self.max_health = 100
+        self.current_health = 100
 
     def attack(self):
             return Bullet(self.rect.centerx, self.rect.centery, "bullet.png", (50, 50), 20, sion.rect.centerx, sion.rect.centery)
@@ -159,6 +161,7 @@ while running:
         bullet.move_towards()
         screen.blit(bullet.image, bullet.rect)
         if bullet.rect.colliderect(sion.rect):
+            sion.current_health -= 20
             bullet = None  # Zničení střely po zásahu cíle
 
     # Vykreslení lišty s tlačítky minimalizace a zavření
@@ -170,6 +173,18 @@ while running:
     screen.blit(sion.image, sion.rect)
     screen.blit(vladimir.image, vladimir.rect)
 
+    pygame.draw.rect(screen, BLACK, (100, 100, 200, 20))
+    health_ratio = vladimir.current_health / vladimir.max_health
+    health_width = int(200 * health_ratio)
+    pygame.draw.rect(screen, RED, (100, 100, health_width, 20))
+
+
+    pygame.draw.rect(screen, BLACK, (100, 200, 200, 20))
+    health_ratio2 = sion.current_health / sion.max_health
+    health_width2 = int(200 * health_ratio2)
+    pygame.draw.rect(screen, RED, (100, 200, health_width2, 20))
+
+    
     pygame.display.flip()
     clock.tick(120)
 
