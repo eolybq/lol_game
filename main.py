@@ -1,27 +1,77 @@
-import pygame
 import sys
 from bullet import *
+import math
+from axe.axe_list import *
 
 pygame.init()
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
+frame_interval = 1000 // 6
 
 class Player:
-    def __init__(self, x, y, image_path, size):
+    def __init__(self, x, y, image_path, size, cooldown_time):
         self.x = x
         self.y = y
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(topleft=(x, y))
-
-    def move_up(self):
-        self.y -= self.speed
+        self.cooldown_time = cooldown_time
 
 
 
-sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (150, 150))
-vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (150, 150))
+    def attack(self):
+            return Bullet(self.rect.centerx, self.rect.centery, "bullet.png", (50, 50), 20, sion.rect.centerx, sion.rect.centery)
+
+
+    def update_cooldown(self, dt):
+        self.cooldown_time -= dt
+        if self.cooldown_time < 0:
+            self.cooldown_time = 0
+class Bullet:
+    def __init__(self, x, y, image_path, size, speed, target_x, target_y):
+        self.x = x
+        self.y = y
+        self.target_x = target_x
+        self.target_y = target_y
+        self.image = pygame.image.load(image_path).convert_alpha()
+        self.image = pygame.transform.scale(self.image, size)
+        self.rect = self.image.get_rect(center=(x, y))
+        self.speed = speed
+
+class Axe:
+    def __init__(self, x, y, size, obrazek):
+        self.x = x
+        self.y = y
+        self.image = obrazek.convert_alpha()
+        self.image = pygame.transform.scale(self.image, size)
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+
+
+
+    def move_towards(self):
+        direction_x = self.target_x - self.rect.centerx
+        direction_y = self.target_y - self.rect.centery
+        distance = math.sqrt(direction_x ** 2 + direction_y ** 2)
+        if distance != 0:
+            direction_x /= distance
+            direction_y /= distance
+
+        self.rect.x += direction_x * self.speed
+        self.rect.y += direction_y * self.speed
+
+    def update_target(self, target_x, target_y):
+        self.target_x = target_x
+        self.target_y = target_y
+
+sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (150, 150), 5)
+vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (150, 150), 5)
 bullet = Bullet((screen_width - 50) // 2, screen_height - 150, "bullet.png", (500, 500), 2, sion.x, sion.y)
+
+axes_obj = []
+for i in axes:
+    axe = Axe(sion.rect.centerx, sion.rect.centery, (50, 50), i)
+    axes_obj.append(axe)
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -41,21 +91,28 @@ dt = 0
 toolbar_rect = pygame.Rect(0, 0, screen_width, 50)
 
 while running:
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:  # Detekce stisku klávesy pro střelbu
-            if event.key == pygame.K_q and bullet is None:  # Stisk klávesy pro výstřel
-                bullet = Bullet(sion.rect.centerx, sion.rect.centery, "bullet.png", (20, 20), 5, vladimir.rect.centerx,
-                                vladimir.rect.centery)
-
         if event.type == pygame.MOUSEBUTTONDOWN:
             if minimize_rect.collidepoint(event.pos):
                 pygame.display.iconify()  # Minimalizace okna
             elif close_rect.collidepoint(event.pos):
                 pygame.quit()  # Ukončení Pygame
                 sys.exit()  # Ukončení programu
+
+        elif event.type == pygame.KEYDOWN:
+
+            if vladimir.cooldown_time <= 0:  # Kontrola cooldownu
+                print("Cooldown ready. Firing bullet.")
+                vladimir.cooldown_time = 5
+                if event.key == pygame.K_q:  # Stisk klávesy pro výstřel
+                    bullet = vladimir.attack()
+
+    sion.update_cooldown(dt)
+    vladimir.update_cooldown(dt)
+
+
 
     screen.fill("white")
 
@@ -80,12 +137,24 @@ while running:
     if keys[pygame.K_d]:
         vladimir.rect.x += 5  # Posun doprava
 
-    # bullet.move()
+    # bullet
+
+    frame_timer += clock.tick(60)  # Získá čas od minulého snímku
+    if frame_timer >= frame_interval:
+        frame_timer = 0  # Resetuje časový interval
+        current_frame = (current_frame + 1) % len(axes_obj)  # Přejde na další snímek
+
+    screen.blit(axes_obj[current_frame], (100, 100))  # Vykreslí aktuální snímek
 
 
-    if keys[pygame.K_q]:
-        screen.blit(bullet.image, bullet.rect)
+
+
+    if bullet is not None:
+        bullet.update_target(sion.rect.centerx, sion.rect.centery)
         bullet.move_towards()
+        screen.blit(bullet.image, bullet.rect)
+        if bullet.rect.colliderect(sion.rect):
+            bullet = None  # Zničení střely po zásahu cíle
 
 
     # Vykreslení lišty s tlačítky minimalizace a zavření
@@ -99,6 +168,7 @@ while running:
     screen.blit(vladimir.image, vladimir.rect)
 
     pygame.display.flip()
+    clock.tick(60)
 
     dt = clock.tick(60) / 1000
 
