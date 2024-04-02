@@ -1,8 +1,9 @@
 import pygame
 import sys
+import time
 from bullet import *
 import math
-from axe.axe_list import *
+from axe_list import *
 
 pygame.init()
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
@@ -32,7 +33,6 @@ class Axe:
     def __init__(self, x, y, size, obrazek):
         self.x = x
         self.y = y
-        print("Attempting to load image from path:", obrazek)
         self.image = pygame.image.load(obrazek).convert_alpha()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(topleft=(x, y))
@@ -53,7 +53,7 @@ class Bullet:
         direction_x = self.target_x - self.rect.centerx
         direction_y = self.target_y - self.rect.centery
         distance = math.sqrt(direction_x ** 2 + direction_y ** 2)
-        if distance != 0:
+        if distance!= 0:
             direction_x /= distance
             direction_y /= distance
 
@@ -64,14 +64,14 @@ class Bullet:
         self.target_x = target_x
         self.target_y = target_y
 
-sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (150, 150), 5)
-vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (150, 150), 5)
+sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (150, 150), 0)
+vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (150, 150), 0)
 bullet = Bullet((screen_width - 50) // 2, screen_height - 150, "bullet.png", (500, 500), 2, sion.x, sion.y)
 
 axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
 
-axe_offset_x = 0  # Adjust this value to your desired offset
-axe_offset_y = 0   # Adjust this value to your desired offset
+axe_offset_x = -65  # Adjust this value to your desired offset
+axe_offset_y = 0  # Adjust this value to your desired offset
 
 axes_obj = [Axe(sion.rect.centerx + axe_offset_x, sion.rect.centery + axe_offset_y, (150, 150), path) for path in axe_paths]
 
@@ -87,7 +87,7 @@ minimize_rect = pygame.Rect(screen_width - 70, 0, 30, 30)
 close_rect = pygame.Rect(screen_width - 35, 0, 30, 30)
 
 axe_frame_interval = 1000 // 6  # Interval pro aktualizaci obrázků sekery (6 FPS)
-axe_frame_timer = 0  # Časovač pro aktualizaci obrázků sekery
+axe_frame_timer = 0  # ��asovač pro aktualizaci obrázků sekery
 
 current_frame = 0
 frame_timer = 0
@@ -97,9 +97,14 @@ is_firing = True
 dt = 0
 toolbar_rect = pygame.Rect(0, 0, screen_width, 50)
 
+is_animating_axes = False
+axe_frame_timer = pygame.time.get_ticks()
+
+
 while running:
 
     dt = clock.tick(120) / 1000
+    current_time = pygame.time.get_ticks()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -110,7 +115,10 @@ while running:
             elif close_rect.collidepoint(event.pos):
                 pygame.quit()  # Ukončení Pygame
                 sys.exit()  # Ukončení programu
-
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_m:
+                is_animating_axes = True  # Start animating axes on 'm' press
+                axe_frame_timer = current_time  # Reset the timer
 
         elif event.type == pygame.KEYDOWN:
 
@@ -121,7 +129,7 @@ while running:
                 vladimir.cooldown_time = 2.5
 
                 if event.key == pygame.K_q:  # Stisk klávesy pro výstřel
-
+                    print("výstřel rpoveden")
                     bullet = vladimir.attack()
 
     sion.update_cooldown(dt)
@@ -148,14 +156,17 @@ while running:
     if keys[pygame.K_d]:
         vladimir.rect.x += 5  # Posun doprava
 
-    axe_frame_timer += dt * 1000  # Přidání času od minulého snímku v milisekundách
-    if axe_frame_timer >= axe_frame_interval:  # Aktualizace obrázku sekery
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_m:
-                axe_frame_timer = 0
-                current_frame = (current_frame + 1) % len(axes_obj)
-                screen.blit(axes_obj[current_frame].image, (sion.rect.left + -50, sion.rect.top))
+    if is_animating_axes:
+        if current_time - axe_frame_timer >= axe_frame_interval:
+            current_frame = (current_frame + 1) % len(axes_obj)
+            axe_frame_timer = current_time
+            # Optional: Stop the animation after one cycle
+            if current_frame == 0:
+                is_animating_axes = False  # Stop animating after one full cycle
 
+    # Drawing Axes if Animation is Active
+    if is_animating_axes:
+        screen.blit(axes_obj[current_frame].image, (sion.rect.x + axe_offset_x, sion.rect.y + axe_offset_y))
     if bullet is not None:
         bullet.update_target(sion.rect.centerx, sion.rect.centery)
         bullet.move_towards()
