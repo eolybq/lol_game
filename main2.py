@@ -119,17 +119,16 @@ while running:
                 is_animating_axes = True  # Start animating axes on 'm' press
                 axe_frame_timer = current_time  # Reset the timer
 
-        elif event.type == pygame.KEYDOWN:
-
-            if vladimir.cooldown_time <= 0:  # Kontrola cooldownu
-
-                print("Cooldown ready. Firing bullet.")
-
-                vladimir.cooldown_time = 2.5
-
-                if event.key == pygame.K_q:  # Stisk klávesy pro výstřel
+            if event.key == pygame.K_q:
+                if vladimir.cooldown_time <= 0:  # Kontrola cooldownu
                     print("výstřel rpoveden")
                     bullet = vladimir.attack()
+                    
+                    print("Cooldown ready. Firing bullet.")
+                    vladimir.cooldown_time = 2.5
+
+          
+                    
 
     sion.update_cooldown(dt)
     vladimir.update_cooldown(dt)
