@@ -65,7 +65,7 @@ class Bullet:
 
 sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (200,220), 0)
 vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (140, 200), 0)
-bullet = Bullet((screen_width - 50) // 2, screen_height - 150, "bullet.png", (500, 500), 2, sion.x, sion.y)
+bullet = None
 
 axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
 
