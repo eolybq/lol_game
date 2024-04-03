@@ -63,8 +63,8 @@ class Bullet:
         self.target_x = target_x
         self.target_y = target_y
 
-sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (150, 150), 0)
-vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (150, 150), 0)
+sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (200,220), 0)
+vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (140, 200), 0)
 bullet = Bullet((screen_width - 50) // 2, screen_height - 150, "bullet.png", (500, 500), 2, sion.x, sion.y)
 
 axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
@@ -72,7 +72,7 @@ axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.p
 axe_offset_x = -65  # Adjust this value to your desired offset
 axe_offset_y = 0  # Adjust this value to your desired offset
 
-axes_obj = [Axe(sion.rect.centerx + axe_offset_x, sion.rect.centery + axe_offset_y, (150, 150), path) for path in axe_paths]
+axes_obj = [Axe(sion.rect.centerx + axe_offset_x, sion.rect.centery + axe_offset_y, (180, 180), path) for path in axe_paths]
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -99,6 +99,7 @@ toolbar_rect = pygame.Rect(0, 0, screen_width, 50)
 is_animating_axes = False
 axe_frame_timer = pygame.time.get_ticks()
 
+damage_dealt = False
 
 while running:
 
@@ -121,10 +122,10 @@ while running:
 
             if event.key == pygame.K_q:
                 if vladimir.cooldown_time <= 0:  # Kontrola cooldownu
-                    print("výstřel rpoveden")
+                    
                     bullet = vladimir.attack()
                     
-                    print("Cooldown ready. Firing bullet.")
+                    
                     vladimir.cooldown_time = 2.5
 
           
@@ -159,12 +160,22 @@ while running:
             current_frame = (current_frame + 1) % len(axes_obj)
             axe_frame_timer = current_time
             # Optional: Stop the animation after one cycle
+            
             if current_frame == 0:
                 is_animating_axes = False  # Stop animating after one full cycle
+                damage_dealt = False
 
     # Drawing Axes if Animation is Active
     if is_animating_axes:
         screen.blit(axes_obj[current_frame].image, (sion.rect.x + axe_offset_x, sion.rect.y + axe_offset_y))
+        
+        for axe in axes_obj:
+            if axe.rect.colliderect(vladimir.rect) and not damage_dealt:
+                vladimir.current_health -= 20
+                damage_dealt = True
+    
+    
+
     if bullet is not None:
         bullet.update_target(sion.rect.centerx, sion.rect.centery)
         bullet.move_towards()
@@ -182,16 +193,16 @@ while running:
     screen.blit(sion.image, sion.rect)
     screen.blit(vladimir.image, vladimir.rect)
 
-    pygame.draw.rect(screen, BLACK, (100, 100, 200, 20))
+    pygame.draw.rect(screen, BLACK, (vladimir.rect.x, vladimir.rect.y - 50, 200, 20))
     health_ratio = vladimir.current_health / vladimir.max_health
     health_width = int(200 * health_ratio)
-    pygame.draw.rect(screen, RED, (100, 100, health_width, 20))
+    pygame.draw.rect(screen, RED, (vladimir.rect.x, vladimir.rect.y - 50, health_width, 20))
 
 
-    pygame.draw.rect(screen, BLACK, (100, 200, 200, 20))
+    pygame.draw.rect(screen, BLACK, (sion.rect.x, sion.rect.y - 50, 200, 20))
     health_ratio2 = sion.current_health / sion.max_health
     health_width2 = int(200 * health_ratio2)
-    pygame.draw.rect(screen, RED, (100, 200, health_width2, 20))
+    pygame.draw.rect(screen, RED, (sion.rect.x, sion.rect.y - 50, health_width2, 20))
 
     
     pygame.display.flip()
