@@ -227,6 +227,11 @@ while running:
         game_over_font = pygame.font.Font(None, 36)
         victory_rect = victory_image.get_rect(center=(screen_width // 2, screen_height // 2))
         screen.blit(victory_image, victory_rect)
+        
+
+        pygame.mixer.music.load('victory.mp3')
+        pygame.mixer.music.play(0)
+        
 
     # Render the text into an image (Surface object). True is for antialiasing, and RED is the color
         if vladimir.current_health <= 0:
