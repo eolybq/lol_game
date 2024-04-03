@@ -9,16 +9,19 @@ screen_width, screen_height = pygame.display.Info().current_w, pygame.display.In
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 frame_interval = 1000 // 6
 
+victory_image = pygame.image.load('victory.png').convert_alpha()
+
 class Player:
-    def __init__(self, x, y, image_path, size, cooldown_time):
+    def __init__(self, x, y, image_path, size, cooldown_time, health, speed):
         self.x = x
         self.y = y
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(topleft=(x, y))
         self.cooldown_time = cooldown_time
-        self.max_health = 100
-        self.current_health = 100
+        self.max_health = health
+        self.current_health = health
+        self.speed = speed
 
     def attack(self):
             return Bullet(self.rect.centerx, self.rect.centery, "bullet.png", (50, 50), 20, sion.rect.centerx, sion.rect.centery)
@@ -63,8 +66,8 @@ class Bullet:
         self.target_x = target_x
         self.target_y = target_y
 
-sion = Player((screen_width - 50) // 2, screen_height - 150, 'sion.png', (200,220), 0)
-vladimir = Player((screen_width - 50) // 2, screen_height - 150, 'vladimir.png', (140, 200), 0)
+sion = Player((screen_width - 850) // 2, screen_height - 450, 'sion.png', (200,220), 0, 140, 1.5)
+vladimir = Player((screen_width + 850) // 2, screen_height - 950, 'vladimir.png', (140, 200), 0, 120, 1.2)
 bullet = None
 
 axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
@@ -101,10 +104,23 @@ axe_frame_timer = pygame.time.get_ticks()
 
 damage_dealt = False
 
+
+summoners_rift = pygame.image.load('summoners_rift.png').convert()
+summoners_rift = pygame.transform.scale(summoners_rift, (screen_width, screen_height))
+
+
+pygame.mixer.music.load('music.mp3')
+pygame.mixer.music.play(-1) 
+pygame.mixer.music.set_volume(0.08)
+
+
 while running:
 
     dt = clock.tick(120) / 1000
     current_time = pygame.time.get_ticks()
+
+    screen.blit(summoners_rift, (0, 0))
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -126,7 +142,7 @@ while running:
                     bullet = vladimir.attack()
                     
                     
-                    vladimir.cooldown_time = 2.5
+                    vladimir.cooldown_time = 1.5
 
           
                     
@@ -134,26 +150,26 @@ while running:
     sion.update_cooldown(dt)
     vladimir.update_cooldown(dt)
 
-    screen.fill("white")
+
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
-        sion.rect.y -= 5  # Posun nahoru
+        sion.rect.y -= 5 * sion.speed  # Posun nahoru
     if keys[pygame.K_DOWN]:
-        sion.rect.y += 5  # Posun dolů
+        sion.rect.y += 5 * sion.speed # Posun dolů
     if keys[pygame.K_LEFT]:
-        sion.rect.x -= 5  # Posun doleva
+        sion.rect.x -= 5 * sion.speed # Posun doleva
     if keys[pygame.K_RIGHT]:
-        sion.rect.x += 5  # Posun doprava
+        sion.rect.x += 5 * sion.speed # Posun doprava
 
-    if keys[pygame.K_w]:
-        vladimir.rect.y -= 5  # Posun nahoru
+    if keys[pygame.K_w]: 
+        vladimir.rect.y -= 5 * vladimir.speed # Posun nahoru
     if keys[pygame.K_s]:
-        vladimir.rect.y += 5  # Posun dolů
+        vladimir.rect.y += 5 * vladimir.speed# Posun dolů
     if keys[pygame.K_a]:
-        vladimir.rect.x -= 5  # Posun doleva
+        vladimir.rect.x -= 5  * vladimir.speed # Posun doleva
     if keys[pygame.K_d]:
-        vladimir.rect.x += 5  # Posun doprava
+        vladimir.rect.x += 5 * vladimir.speed # Posun doprava
 
     if is_animating_axes:
         if current_time - axe_frame_timer >= axe_frame_interval:
@@ -167,12 +183,14 @@ while running:
 
     # Drawing Axes if Animation is Active
     if is_animating_axes:
-        screen.blit(axes_obj[current_frame].image, (sion.rect.x + axe_offset_x, sion.rect.y + axe_offset_y))
+        current_axe = axes_obj[current_frame]  # Get the current axe being animated
+        current_axe.rect.topleft = (sion.rect.x + axe_offset_x, sion.rect.y + axe_offset_y)
+        screen.blit(current_axe.image, current_axe.rect)
         
-        for axe in axes_obj:
-            if axe.rect.colliderect(vladimir.rect) and not damage_dealt:
-                vladimir.current_health -= 20
-                damage_dealt = True
+        # Check collision only for the current axe
+        if current_axe.rect.colliderect(vladimir.rect) and not damage_dealt:
+            vladimir.current_health -= 7
+            damage_dealt = True
     
     
 
@@ -181,7 +199,7 @@ while running:
         bullet.move_towards()
         screen.blit(bullet.image, bullet.rect)
         if bullet.rect.colliderect(sion.rect):
-            sion.current_health -= 20
+            sion.current_health -= 10
             bullet = None  # Zničení střely po zásahu cíle
 
     # Vykreslení lišty s tlačítky minimalizace a zavření
@@ -204,7 +222,39 @@ while running:
     health_width2 = int(200 * health_ratio2)
     pygame.draw.rect(screen, RED, (sion.rect.x, sion.rect.y - 50, health_width2, 20))
 
+    if vladimir.current_health <= 0 or sion.current_health <= 0:
+    # Create a font object. Here, None means the default font, and 36 is the size
+        game_over_font = pygame.font.Font(None, 36)
+        victory_rect = victory_image.get_rect(center=(screen_width // 2, screen_height // 2))
+        screen.blit(victory_image, victory_rect)
+
+    # Render the text into an image (Surface object). True is for antialiasing, and RED is the color
+        if vladimir.current_health <= 0:
+            game_over_text = game_over_font.render("Sion", True, WHITE)
+        else:
+            game_over_text = game_over_font.render("Vladimir", True, WHITE)
+
+    # Blit the text image onto the screen at the calculated position
+        text_rect = game_over_text.get_rect(center=(screen_width // 2, (screen_height -100) // 2))
+        screen.blit(game_over_text, (text_rect))
+    # Update the display to show the text
+        pygame.display.flip()
+    # Pause for a moment so the user can see the message
+        waiting_for_close = True
+        while waiting_for_close:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if minimize_rect.collidepoint(event.pos):
+                        pygame.display.iconify()  # Minimalizace okna
+                    
+                    elif close_rect.collidepoint(event.pos):
+                        pygame.quit() 
+                        sys.exit()
+                        
+
     
+        
+
     pygame.display.flip()
     clock.tick(120)
 
