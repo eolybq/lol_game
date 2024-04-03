@@ -66,8 +66,8 @@ class Bullet:
         self.target_x = target_x
         self.target_y = target_y
 
-sion = Player((screen_width - 850) // 2, screen_height - 450, 'sion.png', (200,220), 0, 140, 1.5)
-vladimir = Player((screen_width + 850) // 2, screen_height - 950, 'vladimir.png', (140, 200), 0, 120, 1.2)
+sion = Player((screen_width + 850) // 2, screen_height - 950, 'sion.png', (200,220), 0, 140, 1.5)
+vladimir = Player((screen_width - 850) // 2, screen_height - 450, 'vladimir.png', (140, 200), 0, 120, 1.2)
 bullet = None
 
 axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
