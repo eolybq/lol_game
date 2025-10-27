@@ -2,7 +2,8 @@ import pygame
 import sys
 from bullet import *
 import math
-from axe_list import *
+from axe_list import axes
+
 
 pygame.init()
 screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
@@ -66,16 +67,15 @@ class Bullet:
         self.target_x = target_x
         self.target_y = target_y
 
-sion = Player((screen_width + 850) // 2, screen_height - 950, 'sion.png', (200,220), 0, 140, 1.5)
-vladimir = Player((screen_width - 850) // 2, screen_height - 450, 'vladimir.png', (140, 200), 0, 120, 1.2)
+sion = Player((screen_width + 850) // 2, screen_height - 950, 'assets/sion.png', (200,220), 0, 140, 1.5)
+vladimir = Player((screen_width - 850) // 2, screen_height - 450, 'assets/vladimir.png', (140, 200), 0, 120, 1.2)
 bullet = None
 
-axe_paths = ['axe1.png', 'axe2.png', 'axe3.png', 'axe4.png', 'axe5.png', 'axe6.png']
 
 axe_offset_x = -65  # Adjust this value to your desired offset
 axe_offset_y = 0  # Adjust this value to your desired offset
 
-axes_obj = [Axe(sion.rect.centerx + axe_offset_x, sion.rect.centery + axe_offset_y, (180, 180), path) for path in axe_paths]
+axes_obj = [Axe(sion.rect.centerx + axe_offset_x, sion.rect.centery + axe_offset_y, (180, 180), path) for path in axes]
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -105,7 +105,7 @@ axe_frame_timer = pygame.time.get_ticks()
 damage_dealt = False
 
 
-summoners_rift = pygame.image.load('summoners_rift.png').convert()
+summoners_rift = pygame.image.load('assets/summoners_rift.png').convert()
 summoners_rift = pygame.transform.scale(summoners_rift, (screen_width, screen_height))
 
 

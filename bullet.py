@@ -1,5 +1,6 @@
 import pygame
 import math
+
 class Bullet:
     def __init__(self, x, y, image_path, size, speed, target_x, target_y):
         self.x = x
