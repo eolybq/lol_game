@@ -9,7 +9,7 @@ screen_width, screen_height = pygame.display.Info().current_w, pygame.display.In
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 frame_interval = 1000 // 6
 
-victory_image = pygame.image.load('victory.png').convert_alpha()
+victory_image = pygame.image.load('assets/victory.png').convert_alpha()
 
 class Player:
     def __init__(self, x, y, image_path, size, cooldown_time, health, speed):
@@ -24,7 +24,7 @@ class Player:
         self.speed = speed
 
     def attack(self):
-            return Bullet(self.rect.centerx, self.rect.centery, "bullet.png", (50, 50), 20, sion.rect.centerx, sion.rect.centery)
+            return Bullet(self.rect.centerx, self.rect.centery, "assets/bullet.png", (50, 50), 20, sion.rect.centerx, sion.rect.centery)
 
     def update_cooldown(self, dt):
         self.cooldown_time -= dt
@@ -109,7 +109,7 @@ summoners_rift = pygame.image.load('summoners_rift.png').convert()
 summoners_rift = pygame.transform.scale(summoners_rift, (screen_width, screen_height))
 
 
-pygame.mixer.music.load('music.mp3')
+pygame.mixer.music.load('assets/music.mp3')
 pygame.mixer.music.play(-1) 
 pygame.mixer.music.set_volume(0.08)
 
@@ -229,7 +229,7 @@ while running:
         screen.blit(victory_image, victory_rect)
         
 
-        pygame.mixer.music.load('victory.mp3')
+        pygame.mixer.music.load('assets/victory.mp3')
         pygame.mixer.music.play(0)
         
 

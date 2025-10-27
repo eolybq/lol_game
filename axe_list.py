@@ -2,7 +2,7 @@ from PIL import Image
 import os
 
 # Adresář obsahující obrázky
-directory = os.path.dirname(os.path.abspath(__file__))
+directory = "/assets"
 
 # Seznam pro uchování načtených obrázků
 axes = []
